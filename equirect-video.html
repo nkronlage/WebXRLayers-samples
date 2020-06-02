@@ -165,7 +165,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let s = document.getElementById("videoselect");
       video.src = s.options[s.selectedIndex].value;
       // HACK
-      if (s.selectedIndex == 1) 
+      if (s.selectedIndex == 1)
         videoHeight = 2160;
       else
         videoHeight = -1;
@@ -315,7 +315,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // disappear.
       if (pose) {
         let arraylength = session.renderState.layers.length;
-//        let fb = gl.createFramebuffer();
 
         if (updatevideo || update_every_frame.checked) {
           updatevideo = false;
@@ -324,35 +323,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           gl.bindTexture(gl.TEXTURE_2D, glayer.colorTexture);
           gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, video.videoWidth, video.videoHeight, gl.RGBA, gl.UNSIGNED_BYTE, video);
-          
-          /*
-          
-          gl.bindTexture(gl.TEXTURE_2D, videoTexture);
-          gl.texSubImage2D(gl.TEXTURE_2D, 0, gl.RGB, video.videoWidth, video.videoHeight, 0, gl.RGB, gl.UNSIGNED_BYTE, video);
-          gl.generateMipmap(gl.TEXTURE_2D);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-
-          gl.viewport(0, 0, video.videoWidth, video.videoHeight);
-          gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, glayer.colorTexture, 0);
-
-          gl.disable(gl.SCISSOR_TEST);
-          stereoUtil.blit(false, videoTexture, 0, 0, 1, 1, video.videoWidth, video.videoHeight);
-
-          gl.bindFramebuffer(gl.FRAMEBUFFER, null);   */
-        }
-                                                        /*
-        if (equirectlayerbackdrop && equirectlayerbackdrop.needsRedraw) {
-          let glayer = xrGLFactory.getSubImage(equirectlayerbackdrop, frame);
-          gl.viewport(0, 0, glayer.textureWidth, glayer.textureHeight);
-          gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, glayer.colorTexture, 0);
-
-          gl.disable(gl.SCISSOR_TEST);
-          stereoUtil.blit(false, backgroundTexture, 0, 0, 1, 1, equirectlayerbackdrop.viewPixelWidth, equirectlayerbackdrop.viewPixelHeight);
-          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        }                                                 */
 
         let views = [];
         for (let view of pose.views) {
@@ -378,7 +348,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.updateInputSources(frame, equirectlayer.space);
         scene.drawViewArray(views);
 
-       // gl.deleteFramebuffer(fb);
         scene.endFrame();
       }
     }
