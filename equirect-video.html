@@ -51,6 +51,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         <option value="media/video/Henry_video_h265_2880x2880_60fps.mp4">2880x2880 60fps</option>
         <option value="media/video/Henry_video_h265_1920x1920_60fps.mp4">1920x1920 60fps</option>
         <option value="media/video/Henry_video_h265_1920x1920_60fps.mp4">3840x3840 30fps</option>
+        <option value="https://oculus-mp4.s3.amazonaws.com/supercut_5120x2560.mp4">side-by-side 5120x2560 60fps</option>
       </select>
       <input type="checkbox" id="update_every_frame">Update every frm</input>
       <button id="xr-button" disabled>XR not found</button>
@@ -242,7 +243,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       stereoUtil = new VRStereoUtil(gl);
       xrFramebuffer = gl.createFramebuffer();
       xrReadFramebuffer = gl.createFramebuffer();
-//?      videoTexture = gl.createTexture();
+      //?      videoTexture = gl.createTexture();
 
       xrGLFactory = new XRWebGLBinding(session, gl);
 
@@ -251,15 +252,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         proj_layer = xrGLFactory.createProjectionLayer("texture", { space: refSpace, stencil: false });
 
+        let sideBySide = video.src.includes("side-by-side");
+
         equirectlayer = xrGLFactory.createEquirectLayer("texture", {
           space: refSpace,
           viewPixelWidth: video.videoWidth,
           viewPixelHeight: ((videoHeight == -1) ? video.videoHeight / 2 : videoHeight / 2),
-          layout: "stereo-top-bottom"
+          layout: sideBySide ? "stereo-left-right" : "stereo-top-bottom"
         });
-//        equirectlayer.centralHorizontalAngle = Math.PI;
-//        equirectlayer.upperVerticalAngle = Math.PI / 2.0;
-//        equirectlayer.lowerVerticalAngle = -Math.PI / 2.0;
+
+        if (sideBySide) {
+          equirectlayer.centralHorizontalAngle = Math.PI;
+          equirectlayer.upperVerticalAngle = Math.PI / 2.0;
+          equirectlayer.lowerVerticalAngle = -Math.PI / 2.0;
+        }
         equirectlayer.radius = 0;
 
         backgroundTexture = loadTexture(gl, 'media/textures/mono_equirect_test.png', (w, h) => {
@@ -324,36 +330,36 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           gl.bindTexture(gl.TEXTURE_2D, glayer.colorTexture);
           gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, video.videoWidth, video.videoHeight, gl.RGBA, gl.UNSIGNED_BYTE, video);
 
-        let views = [];
-        for (let view of pose.views) {
-          let viewport = null;
+          let views = [];
+          for (let view of pose.views) {
+            let viewport = null;
 
-          let glLayer = xrGLFactory.getViewSubImage(proj_layer, view);
+            let glLayer = xrGLFactory.getViewSubImage(proj_layer, view);
 
-          gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
-          glLayer.framebuffer = xrFramebuffer;
-          viewport = glLayer.viewport;
-          gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, glLayer.colorTexture, 0);
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, glLayer.depthStencilTexture, 0);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
+            glLayer.framebuffer = xrFramebuffer;
+            viewport = glLayer.viewport;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, glLayer.colorTexture, 0);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, glLayer.depthStencilTexture, 0);
 
-          gl.enable(gl.SCISSOR_TEST);
-          gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height);
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          gl.disable(gl.SCISSOR_TEST);
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.disable(gl.SCISSOR_TEST);
 
-          views.push(new WebXRView(view, glLayer, viewport));
+            views.push(new WebXRView(view, glLayer, viewport));
+          }
+
+          scene.updateInputSources(frame, equirectlayer.space);
+          scene.drawViewArray(views);
+
+          scene.endFrame();
         }
-
-        scene.updateInputSources(frame, equirectlayer.space);
-        scene.drawViewArray(views);
-
-        scene.endFrame();
       }
-    }
 
-    // Start the XR application.
-    video.addEventListener('loadeddata', (event) => { initXR(); });
+      // Start the XR application.
+      video.addEventListener('loadeddata', (event) => { initXR(); });
   </script>
 </body>
 
