@@ -256,37 +256,37 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         equirectlayer = xrGLFactory.createEquirectLayer("texture", {
           space: refSpace,
-          viewPixelWidth: video.videoWidth,
-          viewPixelHeight: ((videoHeight == -1) ? video.videoHeight / 2 : videoHeight / 2),
+          viewPixelWidth: sideBySide ? video.videoWidth / 2 : video.videoWidth,
+          viewPixelHeight: sideBySide ? video.videoHeight : videoHeight / 2),
           layout: (sideBySide ? "stereo-left-right" : "stereo-top-bottom")
-        });
-
-        if (sideBySide) {
-          equirectlayer.centralHorizontalAngle = Math.PI;
-          equirectlayer.upperVerticalAngle = Math.PI / 2.0;
-          equirectlayer.lowerVerticalAngle = -Math.PI / 2.0;
-        }
-        equirectlayer.radius = 0;
-
-        backgroundTexture = loadTexture(gl, 'media/textures/mono_equirect_test.png', (w, h) => {
-          equirectlayerbackdrop = xrGLFactory.createEquirectLayer("texture", {
-            space: refSpace,
-            viewPixelWidth: w,
-            viewPixelHeight: h,
-            layout: "mono"
-          });
-
-          equirectlayerbackdrop.centralHorizontalAngle = 2 * Math.PI;
-          equirectlayerbackdrop.upperVerticalAngle = Math.PI / 2.0;
-          equirectlayerbackdrop.lowerVerticalAngle = -Math.PI / 2.0;
-          equirectlayerbackdrop.radius = 0;
-          session.updateRenderState({ layers: [equirectlayerbackdrop, equirectlayer, proj_layer] });
-        });
-
-        session.updateRenderState({ layers: [equirectlayer, proj_layer] });
-        // Inform the session that we're ready to begin drawing.
-        session.requestAnimationFrame(onXRFrame);
       });
+
+      if (sideBySide) {
+        equirectlayer.centralHorizontalAngle = Math.PI;
+        equirectlayer.upperVerticalAngle = Math.PI / 2.0;
+        equirectlayer.lowerVerticalAngle = -Math.PI / 2.0;
+      }
+      equirectlayer.radius = 0;
+
+      backgroundTexture = loadTexture(gl, 'media/textures/mono_equirect_test.png', (w, h) => {
+        equirectlayerbackdrop = xrGLFactory.createEquirectLayer("texture", {
+          space: refSpace,
+          viewPixelWidth: w,
+          viewPixelHeight: h,
+          layout: "mono"
+        });
+
+        equirectlayerbackdrop.centralHorizontalAngle = 2 * Math.PI;
+        equirectlayerbackdrop.upperVerticalAngle = Math.PI / 2.0;
+        equirectlayerbackdrop.lowerVerticalAngle = -Math.PI / 2.0;
+        equirectlayerbackdrop.radius = 0;
+        session.updateRenderState({ layers: [equirectlayerbackdrop, equirectlayer, proj_layer] });
+      });
+
+      session.updateRenderState({ layers: [equirectlayer, proj_layer] });
+      // Inform the session that we're ready to begin drawing.
+      session.requestAnimationFrame(onXRFrame);
+    });
     }
 
     // Called either when the user has explicitly ended the session by calling
