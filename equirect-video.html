@@ -167,7 +167,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let s = document.getElementById("videoselect");
       video.src = s.options[s.selectedIndex].value;
       // HACK
-      switch(s.selectedIndex == 1) {
+      switch (s.selectedIndex) {
         case 1: videoWidth = 2160; videoHeight = 2160; break;
         case 2: videoWidth = 3840; videoHeight = 2160; break;
         case 3: videoWidth = 3840; videoHeight = 3840; break;
@@ -175,6 +175,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         case 5: videoWidth = 1920; videoHeight = 1920; break;
         case 6: videoWidth = 3840; videoHeight = 2160; break;
       }
+    }
 
     videoSelect();
     document.getElementById("videoselect").addEventListener('change', (event) => {
