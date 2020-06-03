@@ -258,7 +258,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           space: refSpace,
           viewPixelWidth: video.videoWidth,
           viewPixelHeight: ((videoHeight == -1) ? video.videoHeight / 2 : videoHeight / 2),
-          layout: sideBySide ? "stereo-left-right" : "stereo-top-bottom"
+          layout: (sideBySide ? "stereo-left-right" : "stereo-top-bottom")
         });
 
         if (sideBySide) {
@@ -357,9 +357,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           scene.endFrame();
         }
       }
+    }
 
-      // Start the XR application.
-      video.addEventListener('loadeddata', (event) => { initXR(); });
+    // Start the XR application.
+    video.addEventListener('loadeddata', (event) => { initXR(); });
   </script>
 </body>
 
