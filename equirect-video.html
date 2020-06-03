@@ -257,7 +257,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         equirectlayer = xrGLFactory.createEquirectLayer("texture", {
           space: refSpace,
           viewPixelWidth: sideBySide ? video.videoWidth / 2 : video.videoWidth,
-          viewPixelHeight: sideBySide ? video.videoHeight : videoHeight / 2,
+          viewPixelHeight: sideBySide ? video.videoHeight : video.videoHeight / 2,
           layout: sideBySide ? "stereo-left-right" : "stereo-top-bottom"
         });
 
