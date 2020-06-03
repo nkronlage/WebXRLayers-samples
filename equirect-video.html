@@ -46,12 +46,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       <label>Choose a video</label>
       <select id="videoselect">
         <option value="media/video/Henry_video_h265_2160x2160_60fps.mp4">2160x2160 60fps</option>
+        <option value="https://oculus-mp4.s3.amazonaws.com/supercut_3840x2160.mp4">side-by-side 3840x2160 60fps</option>
         <option value="media/video/Henry_video_h265_3840x2160_60fps.mp4">3840x2160 60fps</option>
-        <option value="media/video/Henry_video_h265_3840x3840_60fps.mp4">3840x3840 60fps</option>
+        <option value="https://oculus-mp4.s3.amazonaws.com/Henry_video_h265_3840x3840_60fps2.mp4">3840x3840 60fps</option>
         <option value="media/video/Henry_video_h265_2880x2880_60fps.mp4">2880x2880 60fps</option>
         <option value="media/video/Henry_video_h265_1920x1920_60fps.mp4">1920x1920 60fps</option>
         <option value="media/video/Henry_video_h265_1920x1920_60fps.mp4">3840x3840 30fps</option>
-        <option value="https://oculus-mp4.s3.amazonaws.com/supercut_3840x2160.mp4">side-by-side 3840x2160 60fps</option>
       </select>
       <input type="checkbox" id="update_every_frame">Update every frm</input>
       <button id="xr-button" disabled>XR not found</button>
@@ -170,11 +170,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       switch (s.selectedIndex) {
         case 0: videoWidth = 2160; videoHeight = 2160; break;
         case 1: videoWidth = 3840; videoHeight = 2160; break;
-        case 2: videoWidth = 3840; videoHeight = 3840; break;
-        case 3: videoWidth = 2880; videoHeight = 2880; break;
-        case 4: videoWidth = 1920; videoHeight = 1920; break;
-        case 5: videoWidth = 3840; videoHeight = 3840; break;
-        case 6: videoWidth = 3840; videoHeight = 2160; break;
+        case 2: videoWidth = 3840; videoHeight = 2160; break;
+        case 3: videoWidth = 3840; videoHeight = 3840; break;
+        case 4: videoWidth = 2880; videoHeight = 2880; break;
+        case 5: videoWidth = 1920; videoHeight = 1920; break;
+        case 6: videoWidth = 3840; videoHeight = 3840; break;
       }
     }
 
@@ -335,33 +335,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           gl.bindTexture(gl.TEXTURE_2D, glayer.colorTexture);
           gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, videoWidth, videoHeight, gl.RGBA, gl.UNSIGNED_BYTE, video);
-
-          let views = [];
-          for (let view of pose.views) {
-            let viewport = null;
-
-            let glLayer = xrGLFactory.getViewSubImage(proj_layer, view);
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
-            glLayer.framebuffer = xrFramebuffer;
-            viewport = glLayer.viewport;
-            gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, glLayer.colorTexture, 0);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, glLayer.depthStencilTexture, 0);
-
-            gl.enable(gl.SCISSOR_TEST);
-            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            gl.disable(gl.SCISSOR_TEST);
-
-            views.push(new WebXRView(view, glLayer, viewport));
-          }
-
-          scene.updateInputSources(frame, equirectlayer.space);
-          scene.drawViewArray(views);
-
-          scene.endFrame();
         }
+
+        let views = [];
+        for (let view of pose.views) {
+          let viewport = null;
+
+          let glLayer = xrGLFactory.getViewSubImage(proj_layer, view);
+
+          gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
+          glLayer.framebuffer = xrFramebuffer;
+          viewport = glLayer.viewport;
+          gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, glLayer.colorTexture, 0);
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, glLayer.depthStencilTexture, 0);
+
+          gl.enable(gl.SCISSOR_TEST);
+          gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          gl.disable(gl.SCISSOR_TEST);
+
+          views.push(new WebXRView(view, glLayer, viewport));
+        }
+
+        scene.updateInputSources(frame, equirectlayer.space);
+        scene.drawViewArray(views);
+
+        scene.endFrame();
       }
     }
 
