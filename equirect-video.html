@@ -56,6 +56,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -->
       </select>
       <input type="checkbox" id="update_every_frame">Update every frm</input>
+      <input type="checkbox" id="backdrop" checked>Show backdrop layer</input>
       <input type="number" id="radius_txt" value="0">Radius</input>
       <button id="xr-button" disabled>XR not found</button>
     </details>
@@ -137,6 +138,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       image.src = url;
     }
 
+    let backdrop = document.getElementById('backdrop');
     // XR globals.
     let xrButton = document.getElementById('xr-button');
     let xrSession = null;
@@ -307,21 +309,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         equirectlayer.radius = document.getElementById("radius_txt").value;
 
-        backgroundTexture = loadTexture(gl, 'media/textures/mono_equirect_test.png', (w, h) => {
-          equirectlayerbackdrop = xrGLFactory.createEquirectLayer("texture", {
-            space: refSpace,
-            viewPixelWidth: w,
-            viewPixelHeight: h,
-            layout: "mono"
+        if (backdrop.checked) {
+          backgroundTexture = loadTexture(gl, 'media/textures/mono_equirect_test.png', (w, h) => {
+            equirectlayerbackdrop = xrGLFactory.createEquirectLayer("texture", {
+              space: refSpace,
+              viewPixelWidth: w,
+              viewPixelHeight: h,
+              layout: "mono"
+            });
+
+            equirectlayerbackdrop.centralHorizontalAngle = 2 * Math.PI;
+            equirectlayerbackdrop.upperVerticalAngle = Math.PI / 2.0;
+            equirectlayerbackdrop.lowerVerticalAngle = -Math.PI / 2.0;
+            equirectlayerbackdrop.radius = 0;
+            session.updateRenderState({ layers: [equirectlayerbackdrop, equirectlayer, proj_layer] });
           });
-
-          equirectlayerbackdrop.centralHorizontalAngle = 2 * Math.PI;
-          equirectlayerbackdrop.upperVerticalAngle = Math.PI / 2.0;
-          equirectlayerbackdrop.lowerVerticalAngle = -Math.PI / 2.0;
-          equirectlayerbackdrop.radius = 0;
-          session.updateRenderState({ layers: [equirectlayerbackdrop, equirectlayer, proj_layer] });
-        });
-
+        }
         session.updateRenderState({ layers: [equirectlayer, proj_layer] });
         // Inform the session that we're ready to begin drawing.
         session.requestAnimationFrame(onXRFrame);
@@ -397,13 +400,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, videoWidth, videoHeight, gl.RGBA, gl.UNSIGNED_BYTE, video);
         }
 
+        gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
+        // We need to invalidate the color (and depth, just in case) here to avoid 
+        // loading from the previously bound color texture. It will save some GPU time.
+        gl.invalidateFramebuffer(gl.FRAMEBUFFER, [gl.COLOR_ATTACHMENT0, gl.DEPTH_ATTACHMENT]);
+
         let views = [];
         for (let view of pose.views) {
           let viewport = null;
 
           let glLayer = xrGLFactory.getViewSubImage(proj_layer, view);
 
-          gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
           glLayer.framebuffer = xrFramebuffer;
           viewport = glLayer.viewport;
           gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
