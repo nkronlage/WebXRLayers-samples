@@ -540,6 +540,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
                     
           if (cyl_layer) {
+            if (cyl_layer.needsRedraw) {
+              texture_copied = false;
+            }
             cyl_layer.space = refSpace;
             quad_layer.space = refSpace;
             if (!texture_copied) {
