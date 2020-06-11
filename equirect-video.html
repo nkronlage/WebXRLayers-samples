@@ -172,6 +172,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     video.preload = 'auto';
     video.autoload = true;
 
+    const lastFrameButtonsByGamepad = new WeakMap();
+    function buttonPressedThisFrame(gamepad, lastFrameButtons, index) {
+      return (gamepad.buttons.length >= index &&
+          gamepad.buttons[index].pressed &&
+          !lastFrameButtons[index]);
+    }
+
     function videoSelect() {
       let s = document.getElementById("videoselect");
       video.src = s.options[s.selectedIndex].value;
@@ -240,23 +247,55 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       equirectlayer.transform = new XRRigidTransform(eqr_pos, {x: orient[0], y: orient[1], z: orient[2], w: orient[3]});
     }
     function ProcessGamepad(gamepad, hand, pose) {
-      if (equirectlayer != null && "axes" in gamepad && gamepad.axes.length >= 4) {
-        if (hand == "right") {
-          const tilt = gamepad.axes[3];
-          const rot = gamepad.axes[2];
+      if (equirectlayer != null) {
+        if ("axes" in gamepad && gamepad.axes.length >= 4) {
+          if (hand == "right") {
+            const tilt = gamepad.axes[3];
+            const rot = gamepad.axes[2];
 
-          // tilt
-          eqr_orient.pitch = tilt * 90;
-          eqr_orient.yaw = rot * 90;
-          updateEqrTransform();
-        } else if (hand == "left") {
-          const zoom = gamepad.axes[3];
-          const horizontal_shift = gamepad.axes[2];
+            // tilt
+            eqr_orient.pitch = tilt * 90;
+            eqr_orient.yaw = rot * 90;
+            updateEqrTransform();
+          } else if (hand == "left") {
+            const zoom = gamepad.axes[3];
+            const horizontal_shift = gamepad.axes[2];
 
-          // tilt
-          eqr_pos.x = horizontal_shift * 4;
-          eqr_pos.z = zoom * 3;
-          updateEqrTransform();
+            // tilt
+            eqr_pos.x = horizontal_shift * 4;
+            eqr_pos.z = zoom * 3;
+            updateEqrTransform();
+          }
+        }
+
+        let lastFrameButtons = lastFrameButtonsByGamepad.get(gamepad);
+        if (!lastFrameButtons) {
+          lastFrameButtons = new Array(gamepad.buttons.length);
+          lastFrameButtons.fill(false);
+          lastFrameButtonsByGamepad.set(gamepad, lastFrameButtons);
+        }
+
+        // Toggle Play/Pause on primary button press
+        if (buttonPressedThisFrame(gamepad, lastFrameButtons, 0)) {
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+        }
+
+        // Fast forward 15s on A button press
+        if (buttonPressedThisFrame(gamepad, lastFrameButtons, 4)) {
+          video.currentTime += 15;
+        }
+
+        // Rewind 15s on B button press
+        if (buttonPressedThisFrame(gamepad, lastFrameButtons, 5)) {
+          video.currentTime -= 15;
+        }
+
+        for (let i = 0; i < gamepad.buttons.length; i++) {
+          lastFrameButtons[i] = gamepad.buttons[i].pressed;
         }
       }
     }
@@ -368,9 +407,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           texture_copied = true;
           let fb = gl.createFramebuffer();
           let glayer = xrGLFactory.getSubImage(equirectlayerbackdrop, frame);
-          
+
           const eqr_texture_width = equirectlayerbackdrop.viewPixelWidth;
-          const eqr_texture_height = equirectlayerbackdrop.viewPixelHeight; 
+          const eqr_texture_height = equirectlayerbackdrop.viewPixelHeight;
 
           gl.viewport(0, 0, eqr_texture_width, eqr_texture_height);
           gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, fb);
@@ -401,7 +440,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
-        // We need to invalidate the color (and depth, just in case) here to avoid 
+        // We need to invalidate the color (and depth, just in case) here to avoid
         // loading from the previously bound color texture. It will save some GPU time.
         gl.invalidateFramebuffer(gl.FRAMEBUFFER, [gl.COLOR_ATTACHMENT0, gl.DEPTH_ATTACHMENT]);
 
